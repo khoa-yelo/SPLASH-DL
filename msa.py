@@ -12,18 +12,24 @@ from dna_feat_extractor import generate_dotplot
 
 
 class MSA:
-    def __init__(self, seqs, aligned_seqs, alphabet_dict, counts):
+    def __init__(self, anchor, seqs, aligned_seqs, alphabet_dict, counts):
+        self.anchor = anchor
         self.seqs = seqs
         self.aligned_seqs = aligned_seqs
         self.alphabet_dict = alphabet_dict
         self.counts = counts
         self.entropy = calculate_entropy_from_counts(self.counts)
-
+        self.lengths = [len(seq) for seq in self.seqs]
+        
+    @property
+    def seq_image(self):
+        onehot_vect = onehot(self.aligned_seqs, self.alphabet_dict)
+        return onehot_vect
+        
     @property
     def prob_matrix(self):
-        onehot_vect = onehot(self.aligned_seqs, self.alphabet_dict)
-        return (onehot_vect.sum(dim=0).T / onehot_vect.sum(dim=[0, 2])).T
-
+        return (self.seq_image.sum(dim=0).T / self.seq_image.sum(dim=[0, 2])).T
+    
     @property
     def pairwise_lev_dist(self):
         n = len(self.aligned_seqs)
@@ -48,10 +54,29 @@ class MSA:
         return np.mean(self.pairwise_lev_dist)
 
     @property
+    def highest_count_seq(self):
+        return self.seqs[np.argmax(self.counts)]
+    
+    @property
     def dotplot_highest_count_seq(self):
-        highest_count_seq = self.seqs[np.argmax(self.counts)]
-        return generate_dotplot(highest_count_seq, highest_count_seq)
+        return generate_dotplot(self.highest_count_seq, self.highest_count_seq)
 
+    @property
+    def longest_seq(self):
+        return max(self.seqs, key=len)
+
+    @property
+    def mean_length(self):
+        return np.mean(self.lengths)
+    
+    @property
+    def max_length(self):
+        return np.max(self.lengths)
+    
+    @property
+    def min_length(self):
+        return np.min(self.lengths)
+    
     def __str__(self):
         return str(self.aligned_seqs)
 
@@ -60,11 +85,15 @@ if __name__ == "__main__":
 
     aligned_seqs = ["ATG--C", "ATGAAC", "ATGGGC"]
     seqs = ["ATGC", "ATGAAC", "ATGGGC"]
-    alphabet_dict = {"p": 0, "-": 1, "A": 2, "C": 3, "G": 4, "T": 5}
-    msa = MSA(seqs, aligned_seqs, alphabet_dict, [1, 2, 3])
+    alphabet_dict = {"-": 0, "A": 1, "C": 2, "G": 3, "T": 4}
+    msa = MSA("AA", seqs, aligned_seqs, alphabet_dict, [1, 2, 3])
+    print(msa.anchor)
     print(msa.prob_matrix)
     print(msa.pairwise_lev_dist)
     print(msa.max_lev_dist)
     print(msa.average_lev_dist)
     print(msa.dotplot_highest_count_seq)
     print(msa.entropy)
+    print(msa.lengths)
+    print(msa.mean_length)
+    print(onehot(msa.aligned_seqs, msa.alphabet_dict).shape)

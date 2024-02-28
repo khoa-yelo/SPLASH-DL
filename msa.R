@@ -1,12 +1,10 @@
 BiocManager::install("msa")
+
 library(msa)
 library(Biostrings)
 library(dplyr)
 library(purrr)
 
-# read excel file
-data <- read.csv("C:\\Users\\khoah\\Downloads\\test_seq.csv", header = TRUE)
-seqs = data$Seq
 
 calMSAprob <- function(seqs){
   # Convert sequences to DNAStringSet
@@ -23,7 +21,10 @@ calMSAprob <- function(seqs){
   msa_and_prob
 }
 
-data <- read.csv("C:\\Users\\khoah\\PhD_Documents\\SPLASH\\compactor_classified_small.csv", header = TRUE)
+path = "/oak/stanford/groups/horence/khoa/data/splash_classification/subset_TSP_SS2_tissue-TSP7-Blood-classified_compactors.tsv"
+aligned_path = "/oak/stanford/groups/horence/khoa/data/splash_classification/aligned_subset_TSP_SS2_tissue-TSP7-Blood-classified_compactors.tsv"
+
+data <- read.csv(path, header = TRUE)
 df <- data.frame(data)
 result <- df %>%
   group_by(anchor_index) %>%
@@ -35,8 +36,8 @@ compactor_indexes <- unlist(lapply(result$compactors, function(x) x$compactor_in
 aligned_compactors <- unlist(result$compactors_aligned)
 df$aligned_compactor <- aligned_compactors[match(df$compactor_index, compactor_indexes)]
 
-set_of_msa <- map(result$compactors, ~ calMSAprob(.x$compactor_valid)[[1]])
-set_of_msa[1]
+#set_of_msa <- map(result$compactors, ~ calMSAprob(.x$compactor_valid)[[1]])
+#set_of_msa[1]
 # write to csv
 write.csv(df, "C:\\Users\\khoah\\PhD_Documents\\SPLASH\\compactor_classified_small_aligned.csv", row.names = FALSE)
 

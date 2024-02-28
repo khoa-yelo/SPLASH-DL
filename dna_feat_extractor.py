@@ -65,12 +65,6 @@ def calculate_seq_entropy(seq):
     return calculate_entropy(p)
 
 
-def kl_divergence(p, q):
-    """
-    Function to calculate the Kullback-Leibler divergence between two probability distributions
-    """
-    return np.sum(p * np.log(p / q))
-
 
 def generate_dotplot(seq1, seq2, window_size=1):
     """
