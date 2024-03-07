@@ -6,7 +6,7 @@ Date: Fed 5th, 2024
 
 import numpy as np
 
-from seq_utils import onehot
+from seq_utils import onehot, label
 from stats_utils import calculate_entropy_from_counts
 from dna_feat_extractor import generate_dotplot
 
@@ -20,16 +20,21 @@ class MSA:
         self.counts = counts
         self.entropy = calculate_entropy_from_counts(self.counts)
         self.lengths = [len(seq) for seq in self.seqs]
-        
+
+    @property
+    def seq_image_label(self):
+        label_vect = label(self.aligned_seqs, self.alphabet_dict)
+        return label_vect
+
     @property
     def seq_image(self):
         onehot_vect = onehot(self.aligned_seqs, self.alphabet_dict)
         return onehot_vect
-        
+
     @property
     def prob_matrix(self):
         return (self.seq_image.sum(dim=0).T / self.seq_image.sum(dim=[0, 2])).T
-    
+
     @property
     def pairwise_lev_dist(self):
         n = len(self.aligned_seqs)
@@ -56,7 +61,7 @@ class MSA:
     @property
     def highest_count_seq(self):
         return self.seqs[np.argmax(self.counts)]
-    
+
     @property
     def dotplot_highest_count_seq(self):
         return generate_dotplot(self.highest_count_seq, self.highest_count_seq)
@@ -68,15 +73,15 @@ class MSA:
     @property
     def mean_length(self):
         return np.mean(self.lengths)
-    
+
     @property
     def max_length(self):
         return np.max(self.lengths)
-    
+
     @property
     def min_length(self):
         return np.min(self.lengths)
-    
+
     def __str__(self):
         return str(self.aligned_seqs)
 
